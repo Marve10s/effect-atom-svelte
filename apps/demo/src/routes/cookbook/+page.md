@@ -263,7 +263,7 @@ const signInOn401 = HttpClient.tap((response) =>
 );
 ```
 
-Pass it as `transformClient` to `AtomHttpApi.Service`, or to `RpcClient.layerProtocolHttp` for RPC. Combine it with the token's `mapRequest` using `pipe`: `transformClient: (client) => client.pipe(addToken, signInOn401)`. The query still fails as it would have, so its component shows the failure until the navigation happens. Only the browser navigates: on the server, check the session in the `handle` hook of `hooks.server.ts`, which can redirect before the page renders. To clear what the previous visitor's atoms hold, see [Reset state when the user changes](#reset-state-when-the-user-changes).
+Pass it as `transformClient` to `AtomHttpApi.Service`, or to `RpcClient.layerProtocolHttp` for RPC. Combine it with the token's `mapRequest` from [Auth headers](#auth-headers) using `pipe`: with `const addToken = HttpClient.mapRequest(...)`, pass `transformClient: (client) => client.pipe(addToken, signInOn401)`. The query still fails as it would have, so its component shows the failure until the navigation happens. Only the browser navigates: on the server, check the session in the `handle` hook of `hooks.server.ts`, which can redirect before the page renders. To clear what the previous visitor's atoms hold, see [Reset state when the user changes](#reset-state-when-the-user-changes).
 
 Declare the 401 as an error on the endpoint or its middleware, as `GET /api/me` does with `Unauthorized`. An `AtomHttpApi` query turns a response it can't decode into a defect, not a typed error: see [Typed errors](/http#typed-errors).
 

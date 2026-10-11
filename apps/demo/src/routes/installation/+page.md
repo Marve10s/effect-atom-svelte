@@ -8,7 +8,7 @@ description: Install the package, turn on Svelte's async mode and add a registry
   import InstallCommand from "#lib/docs/install-command.svelte";
 </script>
 
-Setting up takes three steps: install the packages, turn on Svelte's experimental async support for server rendering and the async hooks, and put a registry at the root of your app. [Your first atom](/first-atom) needs only the first and last.
+Setting up takes three steps: install the packages, turn on Svelte's experimental async support for server rendering and the async hooks, and put a registry at the root of your app. [Your first atom](/first-atom) uses neither async hook, so it needs only the first and last.
 
 ## Install the packages
 
