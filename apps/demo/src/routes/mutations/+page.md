@@ -97,12 +97,12 @@ Pass `{ concurrent: true }` as `Atom.fn`'s second argument, and a new call doesn
 
 <Aside type="caution" title="Concurrent calls share one result">
 
-A concurrent mutation still has one result, and it changes only once no call is running. Say call A starts, then call B starts before A has finished:
+A concurrent mutation still has one result. While the calls succeed, it changes only once no call is running. Say call A starts, then call B starts before A has finished:
 
 1. B finishes first. The result stays `waiting`, because A is still running.
 2. A finishes. The result becomes A's, and both promises settle with it. B's own result is never seen.
 
-A call made once the others have finished gets its own result.
+A failure doesn't wait: if either call fails while the other is still running, the result becomes that `Failure` at once, and both promises settle with it. A call made once the others have finished gets its own result.
 
 </Aside>
 
@@ -187,7 +187,7 @@ export const uploadAtom = Atom.fn((file: File) =>
 
 `fetch` can't report an upload's progress, so this uses `XMLHttpRequest`. Read the mutation with `useAtomValue`: while `current` is a `Success` with `waiting` set, `current.value.sent` and `current.value.total` say how far it has got.
 
-Offer at least one item: a stream that ends without one fails with `NoSuchElementError`. Writing `Atom.Interrupt` stops the stream, and its release aborts the request. The upload listener makes a request to another origin send a CORS preflight first, so the server must answer it.
+Offer at least one item: a stream that ends without one ends on the previous call's value, or fails with `NoSuchElementError` if no call has succeeded yet. A new call also starts from the previous call's last value, marked `waiting`, so a second upload shows the first one's full bar until its first progress event. Writing `Atom.Interrupt` stops the stream, and its release aborts the request. The upload listener makes a request to another origin send a CORS preflight first, so the server must answer it.
 
 ## Refreshing what changed
 
@@ -207,7 +207,7 @@ A round trip to the server can make the page feel slow. An **optimistic update**
 
 `Atom.optimistic` wraps the atom to update, and `Atom.optimisticFn` wraps the mutation with a `reducer` that computes the provisional value from the current value and the mutation's argument. Read the optimistic atom instead of the original, and call the wrapped mutation instead of the original one.
 
-While the mutation runs, the optimistic atom holds the reducer's value, marked `waiting`. When the mutation succeeds, the optimistic atom refreshes the original atom, so the mutation needs no `reactivityKeys` for it. When it fails, it goes back to the original atom's value, and the wrapped mutation's state is the `Failure`, so you can say what happened. As with any mutation, a second call interrupts the first, and the first change rolls back, so the example disables its checkboxes while a save runs.
+While the mutation runs, the optimistic atom holds the reducer's value, marked `waiting`. When the mutation succeeds, the optimistic atom refreshes the original atom, so the mutation needs no `reactivityKeys` for it. When it fails, it goes back to the original atom's value, and the wrapped mutation's state is the `Failure`, so you can say what happened. As with any mutation, a second call interrupts the first. Its reducer starts from the screen, so the first change stays there until the second save finishes, then the original atom is fetched again, and the first change goes if the server never got it. The example disables its checkboxes while a save runs, so no change is lost that way.
 
 The example fails on purpose without sending anything: its mutation checks a flag before it calls the pretend server. A real failure, such as a lost connection, rolls back the same way. It reads the same `todosAtom` as the example above, so a todo you added there shows up here.
 

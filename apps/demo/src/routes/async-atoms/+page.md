@@ -173,20 +173,23 @@ The live example has these two atoms on a dashboard, with the TTL cut to 3 secon
 
 ### Showing a kept result, then refreshing it
 
-Keeping a result decides how long it stays in memory, not how long it counts as fresh. `Atom.swr` adds that: when something reads the atom and its result is older than `staleTime`, it shows the result it has at once and runs the effect again in the background. Keep the source with an idle TTL or `Atom.keepAlive`, so there is a result to show:
+Keeping a result decides how long it stays in memory, not how long it counts as fresh. `Atom.swr` adds that: when a reader starts the atom again after nothing held it, and its result is older than `staleTime`, it shows the result it has at once and runs the effect again in the background. Keep the source with an idle TTL or `Atom.keepAlive`, so there is a result to show:
 
 ```ts
+import { browser } from "$app/env";
+
 const searchAtom = Atom.make(search).pipe(
   Atom.setIdleTTL("10 minutes"),
   Atom.swr({
     staleTime: "1 minute",
     revalidateOnFocus: true,
-    focusSignal: Atom.windowFocusSignal,
+    // windowFocusSignal reads window, so leave it out on the server.
+    focusSignal: browser ? Atom.windowFocusSignal : undefined,
   })
 );
 ```
 
-Back within a minute, the page shows the kept result and fetches nothing. Later than that, it shows the kept result and fetches a fresh one, which replaces it when it arrives. `revalidateOnFocus` does the same check when the tab comes back, and needs a `focusSignal` to know when that is; pass `"always"` to fetch on every return. The atom `swr` returns isn't serializable, even when its source is, so its server-rendered result isn't sent with the page.
+Back within a minute, the page shows the kept result and fetches nothing. Later than that, it shows the kept result and fetches a fresh one, which replaces it when it arrives. `revalidateOnFocus` does the same check when the tab comes back, and needs a `focusSignal` to know when that is. `Atom.windowFocusSignal` uses `window`, so pass it only in the browser, or a server render that reads the atom throws. Pass `"always"` to fetch on every return. The atom `swr` returns isn't serializable, even when its source is, so its server-rendered result isn't sent with the page.
 
 ## Releasing resources
 
