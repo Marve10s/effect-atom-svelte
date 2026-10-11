@@ -66,7 +66,7 @@ The plugin only runs in the dev server. Pass `builds: true` to label production 
 
 A hot reload runs a module again, which makes new atoms, so the state written to the old ones would be lost. With the plugin, a state atom a module declares takes the value of the atom it replaces, so when you edit a component, its counters keep their counts.
 
-A state atom is `Atom.make` of a plain value, alone or piped only through options that keep what is written to it, such as `Atom.keepAlive`, `Atom.setIdleTTL`, `Atom.withLabel` or `Atom.serializable`. An atom piped through `Atom.map` writes through to its source instead, so it isn't kept.
+A state atom is `Atom.make` of a value written in place, such as a number, a string, an object or an array, not a variable, alone or piped only through options that keep what is written to it, such as `Atom.keepAlive`, `Atom.setIdleTTL`, `Atom.withLabel` or `Atom.serializable`. An atom piped through `Atom.map` writes through to its source instead, so it isn't kept.
 
 Edit the atom's own declaration and it starts from its new value instead: the old one no longer applies. Atoms declared in a component's `<script>` aren't kept: there is one per instance, so there is no telling which old one a new one replaces.
 
@@ -219,7 +219,7 @@ The graph has no dependencies beyond Svelte, and inspector scopes work in produc
 The panel is built on `effect-atom-svelte/inspector`, which you can use too:
 
 - `inspect(registry)` starts watching a registry, and returns an inspector whose `subscribe` reports each event: an atom added or removed, computed and why, given a new value, interrupted or finalized. Watching costs a little on every read and write, so call it from tools, not from the app.
-- `registries()` lists the registries the app has provided, in the browser during development, and `watchRegistries(f)` calls `f` whenever that list changes. They are empty on the server and in production.
+- `registries()` lists the registries the app has provided, in the browser during development, and `watchRegistries(f)` calls `f` with it now and whenever it changes. They are empty on the server and in production.
 - `nameComponent(name, file)` names the component being set up, for the scopes its hooks report to. The `atomLabels` plugin calls it for every component; without the plugin, call it yourself.
 
 Events arrive while the registry is still updating, so a listener mustn't read or write atoms, or write Svelte state. Queue them and handle them later:
@@ -233,9 +233,11 @@ Events arrive while the registry is still updating, so a listener mustn't read o
   import type { Event } from "effect-atom-svelte/inspector";
   import { onMount } from "svelte";
 
-  const inspector = inspect(getRegistry());
+  const registry = getRegistry();
 
+  // In onMount, so the server's registries aren't watched.
   onMount(() => {
+    const inspector = inspect(registry);
     const queued: Event[] = [];
     const stop = inspector.subscribe((event) => queued.push(event));
     const timer = setInterval(() => {

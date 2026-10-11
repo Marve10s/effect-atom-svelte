@@ -272,7 +272,7 @@ When the boundary puts its values into the registry:
   - In the browser, while it hydrates the server's markup, also before the children render, so the first render matches the server's. This needs Svelte's `experimental.async`: without it, such an atom, for example one read above the boundary, is updated after the first render.
   - In the browser after that, after the render, so the page doesn't change halfway through one.
 - **Atoms nothing reads** keep their value in the registry until something reads them. The value is dropped when the boundary goes away.
-- **A new `state`** is put into the registry the same way, so when a `load` function runs again, the boundary passes its new results to the atoms.
+- **A new `state`** is put into the registry after the render, for atoms it has and atoms it doesn't, so when a `load` function runs again, the boundary passes its new results to the atoms.
 
 If you render on the server yourself instead of with SvelteKit, and `experimental.async` is on, `await render(...)` so the boundary's `hydratable` entry is written into the page. Without the `await`, a production build of Svelte logs `hydratable_missing_but_expected` once per boundary as the page hydrates.
 

@@ -80,6 +80,8 @@ If the second request only needs a value the component already has, a getter is 
 
 When you already have a rough answer, such as the title a list showed for a todo, show it while the full query loads. `Atom.withFallback` reads a second async atom while the first is still `Initial`:
 
+**Example** (The list's title until the details arrive)
+
 ```ts
 const todoDetailsAtom = Atom.family((id: number) =>
   todoAtom(id).pipe(Atom.withFallback(todoFromListAtom(id)))
@@ -91,6 +93,8 @@ Until `todoAtom(id)` has its first result, `todoDetailsAtom(id)` holds the fallb
 ### Prefetching on hover
 
 To start a page's query before the visitor clicks, hold its atom while the pointer is over the link. Give the atoms an [idle TTL](/lifetimes#keeping-atoms-alive), so the result outlives the hover until the page reads it:
+
+**Example** (Fetching a todo when its link is hovered)
 
 ```ts
 // todos.ts
@@ -150,6 +154,8 @@ When the debounced query changes while a search is still running, the atom runs 
 
 For numbered pages, keep the page number in an atom, and make the list one atom that reads it:
 
+**Example** (One atom for the current page's rows)
+
 ```ts
 const pageAtom = Atom.make(1);
 
@@ -161,16 +167,16 @@ When the page changes, `rowsAtom` runs its effect again and keeps the last page'
 ```svelte
 <script lang="ts">
   const rows = useAtomValue(rowsAtom);
-  const page = useAtom(pageAtom);
+  const pageNumber = useAtom(pageAtom);
 </script>
 
-<button onclick={() => (page.current += 1)}>Next</button>
+<button onclick={() => (pageNumber.current += 1)}>Next</button>
 {#if rows.current._tag === "Success"}
   <table aria-busy={rows.current.waiting}>…</table>
 {/if}
 ```
 
-A [family](/families) keyed by page, read through a getter as `useAtomValue(() => pageRowsAtom(page.current))`, works the other way: each page is an atom of its own, which starts at `Initial`, so the old rows go as soon as the page changes. In exchange, each page keeps its own result, so with an [idle TTL](/lifetimes#keeping-atoms-alive), going back to a page shows it at once.
+A [family](/families) keyed by page, read through a getter as `useAtomValue(() => pageRowsAtom(pageNumber.current))`, works the other way: each page is an atom of its own, which starts at `Initial`, so the old rows go as soon as the page changes. In exchange, each page keeps its own result, so with an [idle TTL](/lifetimes#keeping-atoms-alive), going back to a page shows it at once.
 
 ### Infinite scroll
 
@@ -239,6 +245,8 @@ The example keeps the token in module state, which is safe only in the browser: 
 
 To send the visitor to a sign-in page whenever any request comes back `401 Unauthorized`, look at every response in the same `transformClient`. `HttpClient.tap` sees each response before the client decodes it:
 
+**Example** (Going to sign-in on a 401)
+
 ```ts
 import { Effect } from "effect";
 import { HttpClient } from "effect/http";
@@ -255,7 +263,7 @@ const signInOn401 = HttpClient.tap((response) =>
 );
 ```
 
-Pass it as `transformClient` to `AtomHttpApi.Service`, or to `RpcClient.layerProtocolHttp` for RPC. Combine it with the token's `mapRequest` with `pipe`: `transformClient: (client) => client.pipe(addToken, signInOn401)`. The query still fails as it would have, so its component shows the failure until the navigation happens. Only the browser navigates: on the server, check the session in the `handle` hook of `hooks.server.ts`, which can redirect before the page renders. To clear what the previous visitor's atoms hold, see [Reset state when the user changes](#reset-state-when-the-user-changes).
+Pass it as `transformClient` to `AtomHttpApi.Service`, or to `RpcClient.layerProtocolHttp` for RPC. Combine it with the token's `mapRequest` from [Auth headers](#auth-headers) using `pipe`: with `const addToken = HttpClient.mapRequest(...)`, pass `transformClient: (client) => client.pipe(addToken, signInOn401)`. The query still fails as it would have, so its component shows the failure until the navigation happens. Only the browser navigates: on the server, check the session in the `handle` hook of `hooks.server.ts`, which can redirect before the page renders. To clear what the previous visitor's atoms hold, see [Reset state when the user changes](#reset-state-when-the-user-changes).
 
 Declare the 401 as an error on the endpoint or its middleware, as `GET /api/me` does with `Unauthorized`. An `AtomHttpApi` query turns a response it can't decode into a defect, not a typed error: see [Typed errors](/http#typed-errors).
 

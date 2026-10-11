@@ -29,8 +29,8 @@
   const create = useAtomSet(createAtom, { mode: "promiseExit" });
   const toggle = useAtomSet(toggleAtom);
 
-  // Server rendering waits for the list. The other hooks come first: a hook called after the
-  // await misses the server's results (see Hydration).
+  // Server rendering waits for the list. useAtomResult comes before any other await, so it
+  // gets the server's result (see Hydration).
   const todos = await useAtomResult(todosAtom);
 
   const submit = async (event: SubmitEvent) => {
