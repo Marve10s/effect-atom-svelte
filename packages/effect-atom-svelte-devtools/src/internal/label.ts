@@ -140,6 +140,27 @@ interface LabelOptions {
   readonly local?: boolean;
 }
 
+const isObjectLike = (value: unknown): value is object =>
+  typeof value === "object" && value !== null;
+
+// The key a form definition from `Form.make` carries (effect-atom-svelte's `Form.TypeId`).
+const formTypeId = "~effect-atom-svelte/Form";
+
+/** A form definition that `Form.make` was given no name for. */
+const isUnnamedForm = (
+  value: unknown
+): value is { readonly definition: { name: string | undefined } } => {
+  if (!isObjectLike(value) || !(formTypeId in value && "definition" in value)) {
+    return false;
+  }
+  const { definition } = value;
+  return (
+    isObjectLike(definition) &&
+    "name" in definition &&
+    definition.name === undefined
+  );
+};
+
 /**
  * Labels `value` with `text` and the place it was declared, `at` (`/src/lib/todos.ts:12:14`), if
  * it is an atom, and returns it. For an `Atom.family`, returns a family that labels each member
@@ -160,6 +181,9 @@ export const label = <T>(
         options.keep
       );
     }
+  } else if (isUnnamedForm(value)) {
+    // A form from effect-atom-svelte's Form.make: its instances label their atoms with its name.
+    value.definition.name = text;
   } else if (options.family === true && isFunction(value)) {
     const labelled = (arg: unknown): unknown => {
       const member = value(arg);

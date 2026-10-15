@@ -4,14 +4,18 @@
  * @since 0.1.0
  */
 import { Cause, Effect, Exit } from "effect";
+import type { Schema } from "effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/reactivity";
 import type { AtomRef } from "effect/reactivity";
 import { BROWSER, DEV } from "esm-env";
 import { getAbortSignal, hydratable, untrack } from "svelte";
 import { createSubscriber } from "svelte/reactivity";
 
+import type * as Form from "./Form.ts";
+import { awaitWrite } from "./internal/awaitWrite.ts";
 import { queuedByBoundary } from "./internal/boundaries.ts";
 import { onDispose } from "./internal/disposal.ts";
+import { engineOf, initialGetter } from "./internal/form/engineOf.ts";
 import {
   decodeSeed,
   encodeSeed,
@@ -329,40 +333,6 @@ const awaitSettled = <A, E>(
     { signal }
   );
 };
-
-/**
- * A promise-mode setter's wait: as `awaitResult` with `suspendOnWaiting`, but a change to a result
- * from before the call, which is what `Atom.Reset` from another setter leaves (an idle `Initial`,
- * or an `Atom.fn`'s `initialValue`), ends it as interrupted. The reset interrupts the call, so
- * otherwise the wait would hang until the next call, or settle with the initial value.
- */
-const awaitWrite = <A, E>(
-  registry: AtomRegistry.AtomRegistry,
-  atom: Atom.Atom<AsyncResult.AsyncResult<A, E>>,
-  start: number,
-  signal: AbortSignal
-): Promise<Exit.Exit<A, E | Cause.NoSuchElementError>> =>
-  Effect.runPromiseExit(
-    Effect.callback<A, E | Cause.NoSuchElementError>((resume) => {
-      const first = registry.get(atom);
-      if (first._tag !== "Initial" && !first.waiting) {
-        resume(AsyncResult.toExit(first));
-        return;
-      }
-      const cancel = registry.subscribe(atom, (result) => {
-        if (result.waiting) {
-          return;
-        }
-        cancel();
-        const reset =
-          result._tag === "Initial" ||
-          (result._tag === "Success" && result.timestamp < start);
-        resume(reset ? Exit.interrupt() : AsyncResult.toExit(result));
-      });
-      return Effect.sync(cancel);
-    }),
-    { signal }
-  );
 
 /** A subscription a reader holds on after switching away from its atom. */
 interface KeptSubscription<A> {
@@ -2093,4 +2063,113 @@ export function useAtomSuspense<A, E>(
     }
     return promise;
   }, readOnly);
+}
+
+/**
+ * Creates an instance of a form from `Form.make` in a component. Its state lives in the
+ * component's registry and is released when the component is destroyed; a submit in flight keeps
+ * it, and keeps its atom running, until the submit settles, so a save finishes after a dialog
+ * closes. Share an instance by passing it down, or create it in the parent whose lifetime it
+ * should have, such as a wizard around its steps.
+ *
+ * Pass `id` from `$props.id()`: field ids are built from it, and must match between the server and
+ * the browser. On the server the form renders from `initialValues` and doesn't validate, so there
+ * is nothing to hydrate. A getter for `initialValues` is followed: when it changes, a clean form
+ * takes the new values and a dirty one keeps its edits.
+ *
+ * **Example** (A login form)
+ *
+ * ```svelte
+ * <script lang="ts">
+ *   import { useForm } from "effect-atom-svelte";
+ *   import { Login, loginAtom } from "./forms.ts";
+ *
+ *   const id = $props.id();
+ *   const form = useForm(Login, {
+ *     id,
+ *     initialValues: { email: "", password: "" },
+ *     submit: { atom: loginAtom },
+ *     mapError: (error) =>
+ *       error._tag === "WrongPassword"
+ *         ? { form: "Wrong email or password" }
+ *         : undefined,
+ *   });
+ *   const email = form.field("email");
+ * </script>
+ *
+ * <form {...form.attrs}>
+ *   <label for={email.id}>Email</label>
+ *   <input {...email.attrs} bind:value={email.value} />
+ *   {#if email.error}
+ *     <p id={email.errorId}>{email.error}</p>
+ *   {/if}
+ *   {#if form.rootError}
+ *     <p role="alert">{form.rootError}</p>
+ *   {/if}
+ *   <button disabled={form.submitting}>Log in</button>
+ * </form>
+ * ```
+ *
+ * @see {@link https://atom.jarrednorris.dev/forms | Forms}
+ * @stability unstable
+ * @since 0.4.0
+ * @category hooks
+ */
+export function useForm<
+  F extends Form.Form<Schema.Top>,
+  A,
+  E,
+  W,
+  Args = undefined,
+>(
+  form: F,
+  options: Form.InstanceOptions<Form.Encoded<F>, Form.Decoded<F>, A, E, W, Args>
+): Form.Instance<Form.Encoded<F>, Form.Decoded<F>, A, E, Args>;
+export function useForm<F extends Form.Form<Schema.Top>>(
+  form: F,
+  options: Form.ValidateOnlyOptions<Form.Encoded<F>>
+): Form.Instance<
+  Form.Encoded<F>,
+  Form.Decoded<F>,
+  Form.Decoded<F>,
+  never,
+  void
+>;
+export function useForm(
+  form: Form.Form<Schema.Top>,
+  options: Form.BaseInstanceOptions<unknown> & {
+    readonly submit?:
+      | { readonly atom: unknown; readonly payload?: unknown }
+      | undefined;
+    readonly mapError?: unknown;
+    readonly autoSubmit?: boolean | undefined;
+  }
+): unknown {
+  const registry = getRegistry();
+  const initial = options.initialValues;
+  const getInitial = initialGetter(initial);
+  const engine = engineOf(form, {
+    ...options,
+    initialValues: getInitial ? getInitial() : initial,
+    registry,
+    validates: BROWSER,
+  });
+  const state = useAtomValue(engine.stateAtom);
+  const values = useAtomValue(engine.valuesAtom);
+  engine.setReaders(
+    () => state.current,
+    () => values.current
+  );
+  if (getInitial && BROWSER) {
+    $effect.pre(() => {
+      const next = getInitial();
+      untrack(() => {
+        engine.setInitial(next);
+      });
+    });
+  }
+  onTeardown(() => {
+    engine.dispose();
+  });
+  return engine.root;
 }

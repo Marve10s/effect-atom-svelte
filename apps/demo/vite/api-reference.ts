@@ -113,8 +113,20 @@ const moduleName = (file: string) => file.replace(/(?:\.svelte)?\.ts$/u, "");
  * missing from its page, fails the build.
  */
 const guides = {
+  Form: {
+    "/forms#arrays": ["ArrayField", "ArrayItem"],
+    "/forms#creating-an-instance": ["Instance"],
+    "/forms#defining-a-form": ["MakeOptionsWithRuntime", "make"],
+    "/forms#fields": ["Constraints", "Field", "FieldAttrs", "FormAttrs"],
+    "/forms#groups-of-fields": ["Group"],
+    "/forms#server-errors-on-fields": ["Errors"],
+    "/forms#submitting": ["SubmitOptions", "ValidationError"],
+    "/forms#when-errors-show": ["MakeOptions", "Timing"],
+    "/forms#without-svelte": ["instance"],
+  },
   Hooks: {
     "/async-atoms#running-it-again": ["useAtomRefresh"],
+    "/forms#creating-an-instance": ["useForm"],
     "/lifetimes#holding-an-atom-from-a-component": ["useAtomMount"],
     "/mutations": ["WriteMode", "WriteOptions"],
     "/reading-and-writing": ["AtomState", "AtomValue"],
@@ -148,6 +160,10 @@ const guides = {
     "/scoped-atoms#providing-and-using-it": ["MakeOptions"],
   },
   SvelteKit: {
+    "/forms#asking-before-leaving": [
+      "UnsavedChangesGuardOptions",
+      "useUnsavedChangesGuard",
+    ],
     "/sveltekit#errors-in-boundaries": [
       "CaughtError",
       "EffectErrorBody",
@@ -158,6 +174,7 @@ const guides = {
   index: {
     "/async-atoms#asyncresult": ["AsyncResult"],
     "/first-atom": ["Atom"],
+    "/forms": ["Form"],
     "/http": ["AtomHttpApi"],
     "/hydration": ["Hydration"],
     "/hydration#hydrationboundary": ["HydrationBoundary"],

@@ -216,3 +216,5 @@ The example fails on purpose without sending anything: its mutation checks a fla
 ## Mutations from RPC and HTTP APIs
 
 `AtomRpc` and `AtomHttpApi` generate mutations from the API's definition. They are ordinary mutations: an RPC client's `mutation("createTodo")` is a `runtime.fn` on the client's [runtime](/services), whose argument is `{ payload }` and whose call sends one `createTodo` request. Its error type is the procedure's errors, such as `TitleTooLong`, plus the client's own. Their queries take `reactivityKeys` as an option, and their mutations take them with each call. See [RPC](/rpc#mutations) and [HTTP API](/http#mutations).
+
+For a form with fields to validate, see [Forms](/forms): it decodes the fields with a Schema and submits them through a mutation.
