@@ -56,7 +56,7 @@
   </button>
   <button aria-pressed={todosFail} onclick={toggleFail}>Todos fails</button>
 </p>
-<Parts columns={3}>
+<Parts columns={1}>
   {#each sides as side (side.label)}
     <Part code dashed={!mounted} label={side.label} top>
       {#if mounted}
