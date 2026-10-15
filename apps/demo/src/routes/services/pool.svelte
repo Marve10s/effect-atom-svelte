@@ -71,7 +71,7 @@
     </Part>
   {/each}
 </Parts>
-<div class="mt-3">
+<Parts class="-mt-px" columns={1}>
   <Part
     code
     count={inUse}
@@ -95,4 +95,4 @@
       max={8}
     />
   </Part>
-</div>
+</Parts>

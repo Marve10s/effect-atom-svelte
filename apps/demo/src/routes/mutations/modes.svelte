@@ -112,7 +112,7 @@
   {/each}
 </Parts>
 
-<div class="mt-3">
+<Parts class="-mt-px" columns={1}>
   <Part code label="saveAtom" top>
     <div class="flex flex-wrap items-center gap-3">
       {#if saving.current._tag === "Initial" && !saving.current.waiting}
@@ -147,4 +147,4 @@
       </button>
     </div>
   </Part>
-</div>
+</Parts>
