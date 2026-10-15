@@ -49,7 +49,7 @@
     readonly children: Snippet;
     /** Lays the parts out as a grid: a number of equal columns, or a grid-template-columns value. */
     readonly columns?: number | string;
-    /** One part feeding several: the source, then pairs of a connector and a part. */
+    /** One part feeding two or three: the source, then pairs of a connector and a part. */
     readonly fan?: boolean;
     /** Stacks the parts on a narrow screen, however few there are. */
     readonly stack?: boolean;

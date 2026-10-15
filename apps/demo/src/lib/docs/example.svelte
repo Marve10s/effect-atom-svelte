@@ -284,8 +284,10 @@
   .demo > :global(.hint + *) {
     margin-top: 0;
   }
-  /* The graph is the exception: its negative margin takes it to the frame's edge, above the tabs. */
-  .demo > :global(:last-child:not(.example-graph)) {
+  /* The graph is the exception: its negative margin takes it to the frame's edge, above the tabs.
+     On a phone the graph is hidden, so the element before it is the last one shown. */
+  .demo > :global(:last-child:not(.example-graph)),
+  .demo > :global(:has(+ .example-graph)) {
     margin-bottom: 0;
   }
   .example :global(.code-block) {
