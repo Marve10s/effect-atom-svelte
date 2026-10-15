@@ -26,7 +26,6 @@
   import { AsyncResult } from "effect/reactivity";
 
   import Part from "#lib/docs/kit/part.svelte";
-
   import Parts from "#lib/docs/kit/parts.svelte";
   import ResultChip from "#lib/docs/kit/result-chip.svelte";
   import StateBadge from "#lib/docs/kit/state-badge.svelte";

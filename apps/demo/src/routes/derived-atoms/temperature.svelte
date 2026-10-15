@@ -44,7 +44,11 @@
 
 <Parts fan>
   <Part code label="celsiusAtom" note="holds the value, in °C">
-    <Stepper bind:value={celsius.current} data-testid="celsius" label="Celsius" />
+    <Stepper
+      bind:value={celsius.current}
+      data-testid="celsius"
+      label="Celsius"
+    />
   </Part>
   <span><Arrow both label="get, set" pulse={celsius.current} /></span>
   <Part

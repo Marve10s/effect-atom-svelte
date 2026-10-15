@@ -2,7 +2,6 @@
   import { AtomRef } from "effect/reactivity";
 
   import Part from "#lib/docs/kit/part.svelte";
-
   import Parts from "#lib/docs/kit/parts.svelte";
 
   import ProfileCard from "./profile-card.svelte";

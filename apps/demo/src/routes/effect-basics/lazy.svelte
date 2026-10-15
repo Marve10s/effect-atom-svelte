@@ -2,7 +2,6 @@
   import { Effect, Random } from "effect";
 
   import Part from "#lib/docs/kit/part.svelte";
-
   import Parts from "#lib/docs/kit/parts.svelte";
 
   // How many times each die was really rolled, and what each click got back.
