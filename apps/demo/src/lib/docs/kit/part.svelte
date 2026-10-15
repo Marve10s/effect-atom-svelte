@@ -282,6 +282,7 @@
   /* Overrides the margins .demo gives buttons, so a part's controls sit on its edges. */
   .actions :global(button) {
     margin: 0;
+    white-space: nowrap;
   }
   .top .body {
     align-content: start;
