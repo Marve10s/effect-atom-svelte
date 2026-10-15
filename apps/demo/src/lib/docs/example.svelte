@@ -36,8 +36,9 @@
    *
    * `cap` is how many lines of a long source show before "Show all" (14 by default).
    *
-   * The result opens with a live graph of the atoms its components use (example-graph.svelte), read
-   * from an inspector scope round the result. `graph={false}` leaves it out, as the landing page
+   * The result ends with a live graph of the atoms its components use (example-graph.svelte), read
+   * from an inspector scope round the result. It sits below the controls, so as it grows and shrinks
+   * with the atoms that come and go it never moves a control from under the reader's pointer. `graph={false}` leaves it out, as the landing page
    * does: its reasons already draw theirs.
    */
   const {
@@ -236,14 +237,14 @@
       data-pagefind-ignore="all"
       {@attach listen}
     >
-      {#if scope}
-        <ExampleGraph expected={usesAtoms} {scope} />
-      {/if}
       <p class="example-label not-prose">Result</p>
       {#if hint}
         <Hint>{hint}</Hint>
       {/if}
       {@render children()}
+      {#if scope}
+        <ExampleGraph expected={usesAtoms} {scope} />
+      {/if}
     </div>
   {/if}
   {#if files.length > 1}
