@@ -27,6 +27,8 @@
   import { useAtom, useAtomSet, useAtomValue } from "effect-atom-svelte";
 
   import Part from "#lib/docs/kit/part.svelte";
+
+  import Parts from "#lib/docs/kit/parts.svelte";
   import ResultChip from "#lib/docs/kit/result-chip.svelte";
   import StateBadge from "#lib/docs/kit/state-badge.svelte";
   import { toneOf } from "#lib/docs/kit/tone.ts";
@@ -90,7 +92,7 @@
   ] as const;
 </script>
 
-<div class="grid gap-3 lg:grid-cols-3">
+<Parts columns={3}>
   {#each sites as site (site.mode)}
     <Part code label={site.code} top>
       <div class="flex flex-wrap gap-2">
@@ -109,7 +111,7 @@
       </ol>
     </Part>
   {/each}
-</div>
+</Parts>
 
 <div class="mt-3">
   <Part code label="saveAtom" top>

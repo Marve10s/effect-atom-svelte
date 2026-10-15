@@ -47,6 +47,7 @@
 <script lang="ts">
   import EventLog from "#lib/docs/kit/event-log.svelte";
   import Part from "#lib/docs/kit/part.svelte";
+  import Parts from "#lib/docs/kit/parts.svelte";
 
   import Reader from "./pool-reader.svelte";
 
@@ -55,7 +56,7 @@
   const inUse = $derived(Object.values(reading).filter(Boolean).length);
 </script>
 
-<div class="grid gap-3 sm:grid-cols-2">
+<Parts columns={2}>
   {#each ["usersAtom", "ordersAtom"] as const as name (name)}
     <Part code dashed={!reading[name]} label={name}>
       <button
@@ -69,7 +70,7 @@
       {/if}
     </Part>
   {/each}
-</div>
+</Parts>
 <div class="mt-3">
   <Part
     code
