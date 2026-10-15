@@ -284,7 +284,8 @@
   .demo > :global(.hint + *) {
     margin-top: 0;
   }
-  .demo > :global(:last-child) {
+  /* The graph is the exception: its negative margin takes it to the frame's edge, above the tabs. */
+  .demo > :global(:last-child:not(.example-graph)) {
     margin-bottom: 0;
   }
   .example :global(.code-block) {

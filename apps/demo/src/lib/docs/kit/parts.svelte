@@ -24,9 +24,10 @@
   `"3fr 2fr"`. Its parts keep their contents as they lay them out, and on a narrow screen it is
   one column.
 
-  `fan` draws one part feeding several: the first child is the source, spanning the rows, and the
-  rest come in pairs, a connector cell (an `Arrow`, or an element holding one or none) and the part
-  it leads to. On a narrow screen the source sits on top.
+  `fan` draws one part feeding two or three: the first child is the source, spanning the rows, and
+  the rest come in pairs, a connector cell (an `Arrow`, or an element holding one or none) and the
+  part it leads to. The source spans at most three rows, so a fourth pair would break the layout.
+  On a narrow screen the source sits on top.
 
   ```svelte
   <Parts fan>

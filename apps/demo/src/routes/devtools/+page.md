@@ -15,7 +15,7 @@ description: Name your atoms after their variables, and watch your registry live
 
 - a Vite plugin, `atomLabels()`, that names each atom after the variable that holds it;
 - a panel, `<AtomDevtools />`, that shows your registry live: its dependency graph, a sheet per atom, and a timeline of everything the registry does;
-- the panel's graph on its own, which this site draws above each example.
+- the panel's graph on its own, which this site draws under each example's result.
 
 <Aside type="note" title="This site runs the panel">
 
